@@ -131,6 +131,8 @@ function BlockEditorCard({
   const [draftType, setDraftType] = useState<ModuleContentType>(block.type);
   const primaryValue = getBlockPrimaryValue(block);
   const secondaryValue = getBlockSecondaryValue(block);
+  const draftPrimaryValue = draftType === block.type ? primaryValue : "";
+  const draftSecondaryValue = draftType === block.type ? secondaryValue : "";
 
   return (
     <article
@@ -297,9 +299,10 @@ function BlockEditorCard({
                     Isi teks
                   </label>
                   <Textarea
+                    key={`text-${draftType}-${block.id}`}
                     id={`text-${block.id}`}
                     name="long_text"
-                    defaultValue={primaryValue}
+                    defaultValue={draftPrimaryValue}
                     placeholder={`Satu paragraf per baris\nGunakan teks ini untuk blok naratif.`}
                   />
                 </div>
@@ -311,9 +314,10 @@ function BlockEditorCard({
                     URL utama
                   </label>
                   <Input
+                    key={`url-${draftType}-${block.id}`}
                     id={`url-${block.id}`}
                     name="external_url"
-                    defaultValue={primaryValue}
+                    defaultValue={draftPrimaryValue}
                     placeholder="https://..."
                   />
                 </div>
@@ -328,9 +332,10 @@ function BlockEditorCard({
                     {draftType === "image" ? "Caption" : "Label tombol"}
                   </label>
                   <Input
+                    key={`secondary-${draftType}-${block.id}`}
                     id={`secondary-${block.id}`}
                     name="secondary_label"
-                    defaultValue={secondaryValue}
+                    defaultValue={draftSecondaryValue}
                     placeholder={
                       draftType === "image" ? "Caption gambar" : "Contoh: Buka referensi"
                     }

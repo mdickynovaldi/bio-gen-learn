@@ -9,14 +9,18 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 
 import {
   createEthicsCaseAction,
   createModuleAction,
-  createModuleContentAction,
+  deleteEthicsCaseAction,
+  deleteModuleAction,
 } from "@/app/dashboard/admin/actions";
+import { AdminModuleContentForm } from "@/components/admin-module-content-form";
 import { AdminModuleBlockManager } from "@/components/admin-module-block-manager";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { NoticeBanner } from "@/components/notice-banner";
 import { SiteHeader } from "@/components/site-header";
 import { SubmitButton } from "@/components/submit-button";
@@ -457,101 +461,7 @@ export default async function AdminDashboardPage({
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form action={createModuleContentAction} className="grid gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="module-id" className="text-sm font-medium text-foreground">
-                        Target modul
-                      </label>
-                      <select
-                        id="module-id"
-                        name="module_id"
-                        className="h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm"
-                        required
-                        defaultValue=""
-                      >
-                        <option value="" disabled>
-                          Pilih modul
-                        </option>
-                        {data.modules.map((module) => (
-                          <option key={module.id} value={module.id}>
-                            {module.title}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label htmlFor="content-type" className="text-sm font-medium text-foreground">
-                          Tipe blok
-                        </label>
-                        <select
-                          id="content-type"
-                          name="type"
-                          className="h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm"
-                          required
-                          defaultValue="text"
-                        >
-                          <option value="text">Teks</option>
-                          <option value="image">Gambar</option>
-                          <option value="youtube">YouTube</option>
-                          <option value="link">Tautan</option>
-                          <option value="pdf">PDF</option>
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="sequence" className="text-sm font-medium text-foreground">
-                          Urutan blok
-                        </label>
-                        <Input id="sequence" name="sequence" type="number" min={1} defaultValue={1} required />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="content-title" className="text-sm font-medium text-foreground">
-                        Judul blok
-                      </label>
-                      <Input id="content-title" name="title" placeholder="Contoh: Video penjelasan CRISPR" required />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="summary" className="text-sm font-medium text-foreground">
-                        Ringkasan singkat
-                      </label>
-                      <Textarea id="summary" name="summary" placeholder="Apa fungsi blok ini untuk siswa?" />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="long-text" className="text-sm font-medium text-foreground">
-                        Isi teks / paragraf
-                      </label>
-                      <Textarea
-                        id="long-text"
-                        name="long_text"
-                        placeholder={`Gunakan untuk blok teks.\nSatu paragraf per baris.`}
-                      />
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label htmlFor="external-url" className="text-sm font-medium text-foreground">
-                          URL eksternal / video / file
-                        </label>
-                        <Input id="external-url" name="external_url" placeholder="https://..." />
-                      </div>
-                      <div className="space-y-2">
-                        <label htmlFor="secondary-label" className="text-sm font-medium text-foreground">
-                          Caption / label tombol
-                        </label>
-                        <Input id="secondary-label" name="secondary_label" placeholder="Contoh: Buka PDF" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="asset" className="text-sm font-medium text-foreground">
-                        File gambar / PDF
-                      </label>
-                      <Input id="asset" name="asset" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" />
-                    </div>
-                    <SubmitButton pendingLabel="Menyimpan blok...">
-                      <FolderKanban className="size-4" />
-                      Tambahkan blok materi
-                    </SubmitButton>
-                  </form>
+                  <AdminModuleContentForm modules={data.modules} />
                 </CardContent>
               </Card>
             </section>
@@ -700,15 +610,28 @@ export default async function AdminDashboardPage({
                           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                             {formatDateLabel(item.published_at ?? item.created_at)}
                           </p>
-                          {item.is_published ? (
-                            <Link
-                              href={`/ethics/${item.slug}`}
-                              className="inline-flex items-center gap-2 text-sm font-medium text-primary"
-                            >
-                              Lihat detail
-                              <Send className="size-4" />
-                            </Link>
-                          ) : null}
+                          <div className="flex flex-wrap gap-3">
+                            {item.is_published ? (
+                              <Link
+                                href={`/ethics/${item.slug}`}
+                                className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+                              >
+                                Lihat detail
+                                <Send className="size-4" />
+                              </Link>
+                            ) : null}
+                            <form action={deleteEthicsCaseAction}>
+                              <input type="hidden" name="ethics_case_id" value={item.id} />
+                              <ConfirmSubmitButton
+                                confirmMessage={`Hapus kasus etika "${item.title}"?`}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                <Trash2 className="size-4" />
+                                Hapus
+                              </ConfirmSubmitButton>
+                            </form>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -762,6 +685,17 @@ export default async function AdminDashboardPage({
                         Buka modul live
                         <Send className="size-4" />
                       </Link>
+                      <form action={deleteModuleAction}>
+                        <input type="hidden" name="module_id" value={module.id} />
+                        <ConfirmSubmitButton
+                          confirmMessage={`Hapus modul "${module.title}" beserta semua blok materinya?`}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          <Trash2 className="size-4" />
+                          Hapus modul
+                        </ConfirmSubmitButton>
+                      </form>
                     </div>
                   </div>
                 ))

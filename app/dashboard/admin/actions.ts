@@ -190,6 +190,7 @@ async function revalidateAdminSurfaces() {
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/student");
   revalidatePath("/modules");
+  revalidatePath("/ethics");
 }
 
 async function resequenceModuleContents(moduleId: string) {
@@ -376,6 +377,65 @@ export async function createModuleContentAction(formData: FormData) {
   redirectToAdmin({
     message: "Blok materi berhasil ditambahkan.",
     module: moduleId,
+    tab: "modules",
+  });
+}
+
+export async function deleteModuleAction(formData: FormData) {
+  await requireAdminViewer();
+  const supabase = await createClient();
+
+  const moduleId = String(formData.get("module_id") ?? "").trim();
+
+  if (!moduleId) {
+    redirectToAdmin({
+      error: "Modul yang akan dihapus tidak valid.",
+      tab: "modules",
+    });
+  }
+
+  const [{ data: existingModule, error: moduleError }, { data: existingRows, error: rowsError }] =
+    await Promise.all([
+      supabase.from("modules").select("*").eq("id", moduleId).maybeSingle(),
+      supabase.from("module_contents").select("*").eq("module_id", moduleId),
+    ]);
+
+  if (moduleError) {
+    redirectToAdmin({ error: moduleError.message, tab: "modules" });
+  }
+
+  if (rowsError) {
+    redirectToAdmin({ error: rowsError.message, tab: "modules" });
+  }
+
+  if (!existingModule) {
+    redirectToAdmin({
+      error: "Modul tidak ditemukan.",
+      tab: "modules",
+    });
+  }
+
+  const assetUrls = [
+    existingModule.thumbnail_url,
+    ...(existingRows ?? [])
+      .map((row) => getExistingBlockAssetUrl(parseModuleContent(row)))
+      .filter((url): url is string => Boolean(url)),
+  ];
+
+  const { error } = await supabase.from("modules").delete().eq("id", moduleId);
+
+  if (error) {
+    redirectToAdmin({ error: error.message, tab: "modules" });
+  }
+
+  for (const assetUrl of assetUrls) {
+    await removeLearningAsset(assetUrl);
+  }
+
+  await revalidateAdminSurfaces();
+  revalidatePath(`/modules/${existingModule.slug}`);
+  redirectToAdmin({
+    message: "Modul dan seluruh blok materinya berhasil dihapus.",
     tab: "modules",
   });
 }
@@ -692,4 +752,57 @@ export async function createEthicsCaseAction(formData: FormData) {
 
   await revalidateAdminSurfaces();
   redirectToAdmin({ message: "Kasus etika berhasil disimpan.", tab: "ethics" });
+}
+
+export async function deleteEthicsCaseAction(formData: FormData) {
+  await requireAdminViewer();
+  const supabase = await createClient();
+
+  const ethicsCaseId = String(formData.get("ethics_case_id") ?? "").trim();
+
+  if (!ethicsCaseId) {
+    redirectToAdmin({
+      error: "Kasus etika yang akan dihapus tidak valid.",
+      tab: "ethics",
+    });
+  }
+
+  const { data: existingCase, error: existingError } = await supabase
+    .from("ethics_cases")
+    .select("*")
+    .eq("id", ethicsCaseId)
+    .maybeSingle();
+
+  if (existingError) {
+    redirectToAdmin({ error: existingError.message, tab: "ethics" });
+  }
+
+  if (!existingCase) {
+    redirectToAdmin({
+      error: "Kasus etika tidak ditemukan.",
+      tab: "ethics",
+    });
+  }
+
+  const { error } = await supabase.from("ethics_cases").delete().eq("id", ethicsCaseId);
+
+  if (error) {
+    redirectToAdmin({ error: error.message, tab: "ethics" });
+  }
+
+  const assetUrls = [
+    existingCase.cover_url,
+    existingCase.content_type === "pdf" ? existingCase.content_value : null,
+  ].filter((url): url is string => Boolean(url));
+
+  for (const assetUrl of assetUrls) {
+    await removeLearningAsset(assetUrl);
+  }
+
+  await revalidateAdminSurfaces();
+  revalidatePath(`/ethics/${existingCase.slug}`);
+  redirectToAdmin({
+    message: "Kasus etika berhasil dihapus.",
+    tab: "ethics",
+  });
 }
