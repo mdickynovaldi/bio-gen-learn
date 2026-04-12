@@ -1,0 +1,3 @@
+-- Optional local seed file.
+-- Intentionally left empty because auth users and admin invitations
+-- should be created explicitly per environment.
