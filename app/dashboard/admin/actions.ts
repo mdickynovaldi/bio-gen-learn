@@ -283,28 +283,39 @@ export async function createModuleAction(formData: FormData) {
     title
   );
 
-  const { error } = await supabase.from("modules").insert({
-    author_id: viewer.id,
-    title,
-    slug: slugify(slugInput || title),
-    short_description: shortDescription,
-    opening_narrative: openingNarrative,
-    learning_objectives: objectives,
-    track,
-    level,
-    estimated_duration_minutes: estimatedDurationMinutes,
-    is_featured: isFeatured,
-    is_published: isPublished,
-    thumbnail_path: thumbnailAsset?.path ?? null,
-    thumbnail_url: thumbnailAsset?.publicUrl ?? null,
-  });
+  const { data: module, error } = await supabase
+    .from("modules")
+    .insert({
+      author_id: viewer.id,
+      title,
+      slug: slugify(slugInput || title),
+      short_description: shortDescription,
+      opening_narrative: openingNarrative,
+      learning_objectives: objectives,
+      track,
+      level,
+      estimated_duration_minutes: estimatedDurationMinutes,
+      is_featured: isFeatured,
+      is_published: isPublished,
+      thumbnail_path: thumbnailAsset?.path ?? null,
+      thumbnail_url: thumbnailAsset?.publicUrl ?? null,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
-    redirectToAdmin({ error: error.message, tab: "modules" });
+  if (error || !module) {
+    redirectToAdmin({
+      error: error?.message ?? "Modul gagal dibuat.",
+      tab: "modules",
+    });
   }
 
   await revalidateAdminSurfaces();
-  redirectToAdmin({ message: "Modul baru berhasil dibuat.", tab: "modules" });
+  redirectToAdmin({
+    message: "Modul baru berhasil dibuat. Lanjutkan dengan menambahkan blok materi.",
+    module: module.id,
+    tab: "modules",
+  });
 }
 
 export async function createModuleContentAction(formData: FormData) {
@@ -320,6 +331,7 @@ export async function createModuleContentAction(formData: FormData) {
   if (!moduleId || !title || !type || !Number.isFinite(sequence) || sequence <= 0) {
     redirectToAdmin({
       error: "Lengkapi modul target, judul blok, tipe, dan urutan blok.",
+      module: moduleId,
       tab: "modules",
     });
   }
@@ -370,7 +382,7 @@ export async function createModuleContentAction(formData: FormData) {
       await removeLearningAsset(asset.publicUrl);
     }
 
-    redirectToAdmin({ error: error.message, tab: "modules" });
+    redirectToAdmin({ error: error.message, module: moduleId, tab: "modules" });
   }
 
   await revalidateAdminSurfaces();

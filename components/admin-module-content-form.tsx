@@ -11,6 +11,7 @@ import type { AdminModuleWithContents, ParsedModuleContent } from "@/lib/content
 
 type AdminModuleContentFormProps = {
   modules: AdminModuleWithContents[];
+  initialModuleId?: string | null;
 };
 
 type ModuleContentType = ParsedModuleContent["type"];
@@ -23,8 +24,36 @@ const blockTypeHelp = {
   pdf: "Untuk lampiran PDF. Gunakan upload PDF atau URL PDF, lalu isi label tombol.",
 } as const;
 
-export function AdminModuleContentForm({ modules }: AdminModuleContentFormProps) {
+function getInitialModuleId(
+  modules: AdminModuleWithContents[],
+  initialModuleId?: string | null
+) {
+  if (initialModuleId && modules.some((module) => module.id === initialModuleId)) {
+    return initialModuleId;
+  }
+
+  return modules[0]?.id ?? "";
+}
+
+function getNextSequence(module: AdminModuleWithContents | undefined) {
+  if (!module || module.contents.length === 0) {
+    return 1;
+  }
+
+  return Math.max(...module.contents.map((content) => content.sequence)) + 1;
+}
+
+export function AdminModuleContentForm({
+  modules,
+  initialModuleId,
+}: AdminModuleContentFormProps) {
   const [selectedType, setSelectedType] = useState<ModuleContentType>("text");
+  const [selectedModuleId, setSelectedModuleId] = useState(() =>
+    getInitialModuleId(modules, initialModuleId)
+  );
+  const selectedModule = modules.find((module) => module.id === selectedModuleId);
+  const [sequence, setSequence] = useState(() => getNextSequence(selectedModule));
+  const hasModules = modules.length > 0;
 
   return (
     <form action={createModuleContentAction} className="grid gap-4">
@@ -37,17 +66,32 @@ export function AdminModuleContentForm({ modules }: AdminModuleContentFormProps)
           name="module_id"
           className="h-11 w-full rounded-lg border border-input bg-transparent px-3 text-sm"
           required
-          defaultValue=""
+          value={selectedModuleId}
+          onChange={(event) => {
+            const nextModuleId = event.target.value;
+            const nextModule = modules.find((module) => module.id === nextModuleId);
+
+            setSelectedModuleId(nextModuleId);
+            setSequence(getNextSequence(nextModule));
+          }}
+          disabled={!hasModules}
         >
-          <option value="" disabled>
-            Pilih modul
-          </option>
+          {hasModules ? null : (
+            <option value="" disabled>
+              Buat modul terlebih dahulu
+            </option>
+          )}
           {modules.map((module) => (
             <option key={module.id} value={module.id}>
-              {module.title}
+              {module.title} ({module.contents.length} blok)
             </option>
           ))}
         </select>
+        {selectedModule ? (
+          <p className="text-xs leading-5 text-muted-foreground">
+            Blok berikutnya akan disimpan sebagai urutan {sequence}.
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -77,7 +121,16 @@ export function AdminModuleContentForm({ modules }: AdminModuleContentFormProps)
           <label htmlFor="sequence" className="text-sm font-medium text-foreground">
             Urutan blok
           </label>
-          <Input id="sequence" name="sequence" type="number" min={1} defaultValue={1} required />
+          <Input
+            id="sequence"
+            name="sequence"
+            type="number"
+            min={1}
+            value={sequence}
+            onChange={(event) => setSequence(Number(event.target.value))}
+            required
+            disabled={!hasModules}
+          />
         </div>
       </div>
 
@@ -194,7 +247,7 @@ export function AdminModuleContentForm({ modules }: AdminModuleContentFormProps)
         </>
       ) : null}
 
-      <SubmitButton pendingLabel="Menyimpan blok...">
+      <SubmitButton pendingLabel="Menyimpan blok..." disabled={!hasModules}>
         <FolderKanban className="size-4" />
         Tambahkan blok materi
       </SubmitButton>

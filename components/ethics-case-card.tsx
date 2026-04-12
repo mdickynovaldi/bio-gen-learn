@@ -49,7 +49,9 @@ function getDetailPreview(detail: string) {
 export function EthicsCaseCard({ item }: EthicsCaseCardProps) {
   const Icon = typeIcon[item.content_type];
   const resourceHref =
-    item.content_type === "text" ? null : normalizeExternalHref(item.content_value);
+    item.content_type === "text"
+      ? null
+      : normalizeExternalHref(item.content_value);
 
   return (
     <Card size="sm" className="border-border/70 bg-card/92">
@@ -67,7 +69,9 @@ export function EthicsCaseCard({ item }: EthicsCaseCardProps) {
             </span>
             <span>{item.title}</span>
           </CardTitle>
-          <CardDescription className="leading-6">{item.summary}</CardDescription>
+          <CardDescription className="leading-6">
+            {item.summary}
+          </CardDescription>
         </div>
       </CardHeader>
       <CardContent className="space-y-3 text-sm leading-7 text-muted-foreground">
@@ -77,12 +81,12 @@ export function EthicsCaseCard({ item }: EthicsCaseCardProps) {
           </p>
           <p className="mt-2">{getDetailPreview(item.detail)}</p>
         </div>
-        <div className="rounded-2xl bg-secondary/50 p-4">
+        {/* <div className="rounded-2xl bg-secondary/50 p-4">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Cara pakai
           </p>
           <p className="mt-2">{resourceHint[item.content_type]}</p>
-        </div>
+        </div> */}
       </CardContent>
       <CardFooter className="justify-between gap-3">
         <Button asChild size="sm">
