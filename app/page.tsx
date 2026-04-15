@@ -62,7 +62,7 @@ export default async function HomePage() {
         <section className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
           <div className="space-y-8">
             <Badge variant="secondary" className="rounded-full px-4 py-1.5 text-sm">
-              Backend Supabase aktif untuk auth, CMS modul, dan update kasus etika
+              Backend aktif untuk login, CMS modul, dan update kasus etika
             </Badge>
 
             <div className="space-y-6">
@@ -71,7 +71,7 @@ export default async function HomePage() {
               </h1>
               <p className="max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
                 Bio-Gen Learn sekarang membaca modul dan kasus etika langsung dari
-                Supabase, lengkap dengan alur login siswa, dashboard guru, dan
+                database, lengkap dengan alur login siswa, dashboard guru, dan
                 manajemen konten berbasis role.
               </p>
             </div>
@@ -117,7 +117,7 @@ export default async function HomePage() {
               </Badge>
               <div className="space-y-3">
                 <CardTitle className="font-heading text-3xl">
-                  Auth, konten, dan CMS berbagi satu sumber data.
+                  Login, konten, dan CMS berbagi satu sumber data.
                 </CardTitle>
                 <CardDescription className="leading-7">
                   Halaman publik menampilkan modul dan kasus terbit. Begitu login,
@@ -183,7 +183,7 @@ export default async function HomePage() {
                 Pengalaman siswa dan guru kini benar-benar role-aware
               </CardTitle>
               <CardDescription className="leading-7">
-                Rute dashboard diamankan lewat Supabase SSR dan Next.js Proxy.
+                Rute dashboard diamankan lewat session server dan Next.js Proxy.
                 Server actions memvalidasi role lagi sebelum menulis data.
               </CardDescription>
             </CardHeader>
@@ -236,7 +236,7 @@ export default async function HomePage() {
           <div className="space-y-1">
             <p className="font-medium text-foreground">Bio-Gen Learn</p>
             <p>
-              Next.js 16, Tailwind v4, shadcn/ui, Supabase Auth, Database, dan Storage.
+              Next.js 16, Tailwind v4, shadcn/ui, Database, dan Storage.
             </p>
           </div>
           <Badge variant="secondary">

@@ -1,19 +1,10 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-
-function getBaseUrl(origin: string | null) {
-  return (
-    origin ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000"
-  );
-}
 
 function redirectWithError(path: string, message: string): never {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -56,7 +47,19 @@ export async function loginAction(formData: FormData) {
 
 export async function signupStudentAction(formData: FormData) {
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+  let adminSupabase: ReturnType<typeof createAdminClient>;
+
+  try {
+    adminSupabase = createAdminClient();
+  } catch (error) {
+    redirectWithError(
+      "/register",
+      error instanceof Error
+        ? error.message
+        : "Konfigurasi register tanpa verifikasi email belum lengkap."
+    );
+  }
+
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const name = String(formData.get("name") ?? "").trim();
@@ -65,30 +68,48 @@ export async function signupStudentAction(formData: FormData) {
     redirectWithError("/register", "Nama, email, dan password wajib diisi.");
   }
 
-  const { data, error } = await supabase.auth.signUp({
+  const { error: createUserError } = await adminSupabase.auth.admin.createUser({
     email,
     password,
-    options: {
-      data: {
-        name,
-      },
-      emailRedirectTo: `${getBaseUrl(origin)}/auth/confirm?next=/dashboard`,
+    email_confirm: true,
+    user_metadata: {
+      name,
     },
   });
 
-  if (error) {
-    redirectWithError("/register", error.message);
+  if (createUserError) {
+    redirectWithError("/register", createUserError.message);
+  }
+
+  const { error: loginError } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (loginError) {
+    redirectWithError("/login", loginError.message);
   }
 
   revalidatePath("/", "layout");
 
-  if (data.session) {
-    redirect("/dashboard/student?message=Pendaftaran berhasil. Selamat belajar.");
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirectWithError("/login", "Akun dibuat, tetapi sesi login tidak berhasil dibuat.");
   }
 
-  redirect(
-    "/login?message=Akun dibuat. Jika verifikasi email aktif, cek inbox Anda lalu login kembali."
-  );
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const dashboardPath =
+    profile?.role === "admin" ? "/dashboard/admin" : "/dashboard/student";
+
+  redirect(`${dashboardPath}?message=Pendaftaran berhasil. Akun langsung aktif.`);
 }
 
 export async function signOutAction() {

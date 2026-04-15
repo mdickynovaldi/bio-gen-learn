@@ -42,15 +42,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <Card className="border-border/70 bg-linear-to-br from-card via-card to-secondary/70">
           <CardHeader className="space-y-4">
             <Badge variant="outline" className="w-fit">
-              Autentikasi Supabase
+              Autentikasi akun
             </Badge>
             <div className="space-y-3">
               <CardTitle className="font-heading text-4xl">
                 Satu login untuk siswa dan guru.
               </CardTitle>
               <CardDescription className="max-w-xl leading-7">
-                Frontend dan backend sekarang benar-benar tersambung. Setelah login,
-                user akan diarahkan otomatis ke dashboard berdasarkan role di tabel `users`.
+                Setelah login, pengguna diarahkan otomatis ke dashboard
+                berdasarkan role yang sudah tersimpan.
               </CardDescription>
             </div>
           </CardHeader>

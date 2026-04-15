@@ -30,12 +30,6 @@ const typeIcon = {
   link: ExternalLink,
 } as const;
 
-const resourceHint = {
-  text: "Kasus ini berdiri mandiri dan bisa langsung dibaca penuh di halaman detail.",
-  pdf: "Detail kasus tersedia di halaman detail. PDF dipakai sebagai bahan baca lanjutan.",
-  link: "Detail kasus tersedia di halaman detail. Tautan dipakai sebagai sumber pendukung.",
-} as const;
-
 function getDetailPreview(detail: string) {
   const compact = detail.replace(/\s+/g, " ").trim();
 
@@ -81,12 +75,6 @@ export function EthicsCaseCard({ item }: EthicsCaseCardProps) {
           </p>
           <p className="mt-2">{getDetailPreview(item.detail)}</p>
         </div>
-        {/* <div className="rounded-2xl bg-secondary/50 p-4">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Cara pakai
-          </p>
-          <p className="mt-2">{resourceHint[item.content_type]}</p>
-        </div> */}
       </CardContent>
       <CardFooter className="justify-between gap-3">
         <Button asChild size="sm">

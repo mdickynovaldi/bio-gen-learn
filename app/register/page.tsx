@@ -17,7 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 export const metadata: Metadata = {
   title: "Register Siswa",
@@ -50,8 +49,8 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                 Buat akun untuk mulai belajar genetika secara mandiri.
               </CardTitle>
               <CardDescription className="leading-7">
-                Trigger Supabase otomatis membuat profil siswa di tabel `users`
-                ketika akun berhasil dibuat melalui Auth.
+                Akun siswa langsung aktif setelah email dan password dikirim,
+                tanpa menunggu email konfirmasi.
               </CardDescription>
             </div>
           </CardHeader>
@@ -61,7 +60,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                 icon: GraduationCap,
                 title: "Sapaan personal di dashboard",
                 description:
-                  "Nama yang kamu masukkan akan dipakai sebagai header sambutan setelah login.",
+                  "Nama tampilan dibuat otomatis dari email supaya pendaftaran tetap cepat.",
               },
               {
                 icon: BookOpenCheck,
@@ -101,15 +100,15 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
         <Card className="border-border/70 bg-linear-to-br from-card via-card to-secondary/70">
           <CardHeader className="space-y-3">
             <Badge variant="secondary" className="w-fit">
-              Supabase Auth sign up
+              Register langsung aktif
             </Badge>
             <div className="space-y-2">
               <CardTitle className="font-heading text-3xl">
                 Pendaftaran akun siswa
               </CardTitle>
               <CardDescription className="leading-7">
-                Jika verifikasi email diaktifkan pada project, pengguna akan diarahkan
-                ke inbox untuk konfirmasi sebelum login.
+                Isi nama, email, dan password. Setelah berhasil, kamu langsung
+                masuk ke dashboard siswa.
               </CardDescription>
             </div>
           </CardHeader>
@@ -119,10 +118,15 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
 
             <form action={signupStudentAction} className="space-y-5">
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-foreground">
+                <label htmlFor="register-name" className="text-sm font-medium text-foreground">
                   Nama lengkap
                 </label>
-                <Input id="name" name="name" placeholder="Alya Nadhira" required />
+                <Input
+                  id="register-name"
+                  name="name"
+                  placeholder="Alya Nadhira"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <label htmlFor="register-email" className="text-sm font-medium text-foreground">
@@ -146,16 +150,6 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
                   type="password"
                   placeholder="Minimal 6 karakter"
                   required
-                />
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="interest" className="text-sm font-medium text-foreground">
-                  Fokus belajar
-                </label>
-                <Textarea
-                  id="interest"
-                  placeholder="Contoh: Saya ingin lebih paham CRISPR dan isu etik terapi gen."
-                  disabled
                 />
               </div>
               <SubmitButton size="lg" pendingLabel="Membuat akun...">
